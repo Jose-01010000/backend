@@ -17,8 +17,15 @@ router.get("/", (req, res) => {
 });
 
 router.post("/register", (req, res) => {
-  const { nombre, apellido, correo, contrasena, fechaNacimiento, rolUsuario } =
-    req.body;
+  const {
+    id,
+    nombre,
+    apellido,
+    correo,
+    contrasena,
+    fechaNacimiento,
+    rolUsuario,
+  } = req.body;
 
   const hasContrasena = md5(contrasena.toString());
   const comprobarUsario = "select correo from usuarios where correo = ?";
@@ -26,10 +33,21 @@ router.post("/register", (req, res) => {
   mysqlConnection.query(comprobarUsario, [correo], (err, result, fields) => {
     if (!result.length) {
       const sql =
-        "insert into usuarios (nombre, Apellido, correo, contraseña, fecha_nacimiento, rol_usuario) values (?, ?,?, ?, ?, ?)";
+        "insert into usuarios (id_usuario, nombre, Apellido, correo, contraseña, fecha_nacimiento, rol_usuario) values (?, ?, ?, ?, ?, ?, ?)";
+
+      const sql2 =
+        "insert into estudiantes (puntos_totales, escolaridad, id_usuario) values (?, ?, ?)";
       mysqlConnection.query(
         sql,
-        [nombre, apellido, correo, hasContrasena, fechaNacimiento, rolUsuario],
+        [
+          id,
+          nombre,
+          apellido,
+          correo,
+          hasContrasena,
+          fechaNacimiento,
+          rolUsuario,
+        ],
         (err, result, fields) => {
           if (err) {
             res.json({ status: 0, data: err });
@@ -40,17 +58,23 @@ router.post("/register", (req, res) => {
           }
         }
       );
+
+      mysqlConnection.query(sql2, [0, "", id], (err, result, fields) => {
+        if (err) {
+          res.json({ mensaje: "No se puedo registrar al estudiantes" });
+        }
+      });
     } else {
       res.json({ status: 2, mensaje: "Usuario ya se encuentra registrado" });
     }
   });
 });
 
-router.post("/singin", (req, res) => {
+router.post("/login", (req, res) => {
   const { correo, contrasena } = req.body;
   const hasContrasena = md5(contrasena.toString());
   mysqlConnection.query(
-    "select nombre, correo, rol_usuario from usuarios where correo = ? and contraseña = ?",
+    "select id_usuario, nombre, correo from usuarios where correo = ? and contraseña = ?",
     [correo, hasContrasena],
     (err, rows, fields) => {
       if (!err) {

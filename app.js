@@ -15,4 +15,7 @@ app.use("/user", userRoute);
 const cursoRoute = require("./api/routes/cursos");
 app.use("/curso", cursoRoute);
 
+const premioRoute = require("./api/routes/premios");
+app.use("/premio", premioRoute);
+
 module.exports = app;
